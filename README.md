@@ -2,7 +2,7 @@
 
 AI Agent Audit Trail as a Service.
 
-This project demonstrates a simple risk-decision pipeline for AI agent actions.
+This project demonstrates a simple XGBoost risk-decision pipeline for AI agent actions.
 It uses audit-event data to predict whether an action should be `Allowed`,
 `Blocked`, or sent for `Needs_Human_Approval`.
 
@@ -20,23 +20,32 @@ ATaaS/
 └── training_pipeline/
     ├── config.py
     ├── data_loader.py
-    ├── preprocessing.py
-    ├── train_model.py
+    ├── preprocessing.py       # preprocessing pipeline
+    ├── train_model.py         # XGBoost training pipeline
     ├── evaluate_model.py
     ├── predict.py
     └── run_pipeline.py
 ```
 
+## ML Flow
+
+1. Load the CSV dataset from `data/agent_security_risk_scores.csv`
+2. Apply preprocessing for categorical and numeric features
+3. Train an `XGBClassifier`
+4. Save the trained model bundle to `models/risk_decision_model.joblib`
+5. Use `app.py` to showcase dataset insights and live predictions
+
 ## Setup
 
 ```bash
-pip install -r requirements.txt
+python3 -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
 ```
 
 ## Train the Model
 
 ```bash
-python -m training_pipeline.run_pipeline
+.venv/bin/python -m training_pipeline.run_pipeline
 ```
 
 This creates:
@@ -47,5 +56,5 @@ This creates:
 ## Run the Demo App
 
 ```bash
-streamlit run app.py
+.venv/bin/streamlit run app.py
 ```

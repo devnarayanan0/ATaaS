@@ -1,9 +1,10 @@
-"""Train the AATaaS access-decision classifier."""
+"""Train the AATaaS XGBoost access-decision classifier."""
 
 from joblib import dump
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
+from xgboost import XGBClassifier
 
 from training_pipeline.config import MODEL_DIR, MODEL_PATH, RANDOM_STATE, TARGET_COLUMN, TEST_SIZE
 from training_pipeline.data_loader import load_data
@@ -11,38 +12,50 @@ from training_pipeline.preprocessing import build_preprocessor
 
 
 def train_model():
-    """Train and save a model pipeline. Returns the model and test split."""
+    """Train and save an XGBoost model pipeline. Returns artifacts and test split."""
     data = load_data()
     X = data.drop(columns=[TARGET_COLUMN])
     y = data[TARGET_COLUMN]
+    label_encoder = LabelEncoder()
+    y_encoded = label_encoder.fit_transform(y)
 
     X_train, X_test, y_train, y_test = train_test_split(
         X,
-        y,
+        y_encoded,
         test_size=TEST_SIZE,
         random_state=RANDOM_STATE,
-        stratify=y,
+        stratify=y_encoded,
     )
 
-    model = Pipeline(
+    pipeline = Pipeline(
         steps=[
             ("preprocessor", build_preprocessor()),
             (
                 "classifier",
-                RandomForestClassifier(
-                    n_estimators=150,
+                XGBClassifier(
+                    n_estimators=200,
+                    max_depth=4,
+                    learning_rate=0.08,
+                    subsample=0.9,
+                    colsample_bytree=0.9,
+                    eval_metric="mlogloss",
                     random_state=RANDOM_STATE,
-                    class_weight="balanced",
                 ),
             ),
         ]
     )
 
-    model.fit(X_train, y_train)
-    MODEL_DIR.mkdir(parents=True, exist_ok=True)
-    dump(model, MODEL_PATH)
+    pipeline.fit(X_train, y_train)
+    model_bundle = {
+        "pipeline": pipeline,
+        "label_encoder": label_encoder,
+        "model_name": "XGBClassifier",
+    }
 
-    return model, X_test, y_test
+    MODEL_DIR.mkdir(parents=True, exist_ok=True)
+    dump(model_bundle, MODEL_PATH)
+
+    return model_bundle, X_test, y_test
 
 
 if __name__ == "__main__":

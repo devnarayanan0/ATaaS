@@ -5,12 +5,15 @@ import pandas as pd
 
 
 class RiskDecisionPredictor:
-    """Small wrapper around the saved scikit-learn model pipeline."""
+    """Small wrapper around the saved XGBoost model bundle."""
 
     def __init__(self, model_path):
-        self.model = load(model_path)
+        model_bundle = load(model_path)
+        self.pipeline = model_bundle["pipeline"]
+        self.label_encoder = model_bundle["label_encoder"]
 
     def predict_one(self, event: dict) -> str:
         """Predict the access decision for one agent action event."""
         event_frame = pd.DataFrame([event])
-        return self.model.predict(event_frame)[0]
+        prediction = self.pipeline.predict(event_frame)
+        return self.label_encoder.inverse_transform(prediction)[0]

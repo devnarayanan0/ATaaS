@@ -7,14 +7,21 @@ from sklearn.metrics import accuracy_score, classification_report
 from training_pipeline.config import METRICS_PATH, REPORT_DIR
 
 
-def evaluate_model(model, X_test, y_test) -> dict:
-    """Evaluate a trained model and save metrics as JSON."""
-    predictions = model.predict(X_test)
+def evaluate_model(model_bundle, X_test, y_test) -> dict:
+    """Evaluate a trained model bundle and save metrics as JSON."""
+    pipeline = model_bundle["pipeline"]
+    label_encoder = model_bundle["label_encoder"]
+
+    predictions = pipeline.predict(X_test)
+    y_test_labels = label_encoder.inverse_transform(y_test)
+    prediction_labels = label_encoder.inverse_transform(predictions)
+
     metrics = {
-        "accuracy": accuracy_score(y_test, predictions),
+        "model": model_bundle["model_name"],
+        "accuracy": accuracy_score(y_test_labels, prediction_labels),
         "classification_report": classification_report(
-            y_test,
-            predictions,
+            y_test_labels,
+            prediction_labels,
             output_dict=True,
             zero_division=0,
         ),

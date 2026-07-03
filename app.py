@@ -44,7 +44,7 @@ st.bar_chart(data["access_decision"].value_counts())
 st.subheader("Try a Risk Decision Prediction")
 
 if not Path(MODEL_PATH).exists():
-    st.info("Train the model first with: python -m training_pipeline.run_pipeline")
+    st.info("Train the XGBoost model first with: .venv/bin/python -m training_pipeline.run_pipeline")
 else:
     predictor = RiskDecisionPredictor(MODEL_PATH)
 
