@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7/bundles/stomp.umd.min.js"></script>
+</head>
+<body>
+
+<button onclick="connect()">Connect</button>
+
+<script>
+function connect() {
+    const socket = new SockJS("http://localhost:8080/ws");
+
+    const client = StompJs.Stomp.over(socket);
+
+    client.connect({}, function(frame) {
+        console.log("CONNECTED");
+        console.log(frame);
+
+        client.subscribe("/topic/chat/YOUR_JOB_ID", function(message) {
+            console.log(message.body);
+        });
+    });
+}
+</script>
+
+</body>
+</html>
